@@ -1,3 +1,3 @@
 require 'slack-ruby-bot'
-require 'whistler-bot/commands/calculate'
+require 'whistler-bot/commands/deal'
 require 'whistler-bot/bot'
