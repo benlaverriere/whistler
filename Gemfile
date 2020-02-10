@@ -18,3 +18,5 @@ group :test do
   gem 'vcr'
   gem 'webmock'
 end
+
+gem "pry", "~> 0.12.2"
