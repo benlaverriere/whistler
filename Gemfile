@@ -1,22 +1,24 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 ruby '2.6.4'
 
-gem 'slack-ruby-bot'
+gem 'celluloid-io'
+gem 'dotenv'
 gem 'puma'
 gem 'sinatra'
-gem 'dotenv'
-gem 'celluloid-io'
+gem 'slack-ruby-bot'
 
 group :development, :test do
-  gem 'rake'
   gem 'foreman'
+  gem 'pry', '~> 0.12.2'
+  gem 'rake'
+  gem 'rubocop', require: false
 end
 
 group :test do
-  gem 'rspec'
   gem 'rack-test'
+  gem 'rspec'
   gem 'vcr'
   gem 'webmock'
 end
-
-gem "pry", "~> 0.12.2"

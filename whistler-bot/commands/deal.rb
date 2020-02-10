@@ -1,33 +1,76 @@
-require 'pry'
+# frozen_string_literal: true
+
+require_relative 'deck'
 
 module WhistlerBot
   module Commands
     class Deal < SlackRubyBot::Commands::Base
-      @cards = %w[A 2 3 4 5 6 7 8 9 10 J Q K].product(%w[:clubs: :hearts: :spades: :diamonds:]).freeze
-      command 'deal' do |client, data, _match|
+
+      @deck = Deck.new
+
+      def self.missing_participants
+        'Please mention the other players I should deal to, '\
+        'like `deal @robin @kelly @mariel`'
+      end
+
+      def self.mention_user(user_id)
+        mention_thing(user_id, '@')
+      end
+
+      def self.mention_channel(channel_id)
+        mention_thing(channel_id, '#')
+      end
+
+      def self.mention_thing(thing_id, prefix)
+        "<#{prefix}#{thing_id}>"
+      end
+
+      def self.deal_to(user_ids)
+        users = user_ids.map do |user|
+          mention_user(user)
+        end.join(', ')
+        ":black_joker: Dealing a new round to #{users}"
+      end
+
+      def self.announce_hand(channel, dealer, cards)
+        <<~REMARK
+          #{mention_user(dealer)} wants to play cards with you in #{mention_channel(channel)}! Your hand is:
+          #{sort_for_display(cards)}
+        REMARK
+      end
+
+      def self.sort_for_display(cards)
+        Deck.group_by_suit(cards).join("\n")
+      end
+
+      command 'deal' do |client, data, match|
         wc = client.web_client
 
-        participants = data.blocks.first.elements.first.elements.select{|node| node.type == "user"}.map{|user| user.user_id }
-        client.say(channel: data.channel, text: 'Please mention the other players I should deal to, like `deal @robin @kelly @mariel`') and return unless participants.length > 0
-        participants += data.user unless participants.include? data.user
-        client.say(channel: data.channel, text: ":black_joker: Dealing a new round to #{participants.map{|user_id| "<@#{user_id}>"}.join(", ")}")
+        participants = participants(match['expression'])
+        if participants.nil?
+          client.say(
+            channel: data.channel,
+            text: missing_participants
+          ) && return
+        end
 
-        dealt_hands = @cards.shuffle.each_slice(@cards.length/participants.length)
+        participants += data.user unless participants.include? data.user
+        client.say(channel: data.channel, text: deal_to(participants))
+
+        dealt_hands = @deck.shuffle.each_slice(@deck.length / participants.length)
         participants.each do |user_id|
           im = wc.im_open(user: user_id)
           wc.chat_postMessage(
             channel: im['channel']['id'],
-            text: "<@#{data.user}> wants to play cards with you! Your hand is:\n#{dealt_hands.first.map{|card| card.reverse.join('')}.sort.join("\n")}",
-            as_user: true)
+            text: announce_hand(data.channel, data.user, dealt_hands.first),
+            as_user: true
+          )
         end
       end
 
-
-      def participants(data)
-        # TODO, clearly, some improvements
-        data.blocks.first.elements.first.elements.select{|node| node.type == "user"}.map{|user| user.user_id }
+      def self.participants(expression)
+        /<@(\w+?)>/.match(expression)&.captures
       end
-
     end
   end
 end

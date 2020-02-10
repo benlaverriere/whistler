@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe WhistlerBot::Commands::Deal do
@@ -8,6 +10,6 @@ describe WhistlerBot::Commands::Deal do
   subject { app }
 
   it 'includes each card once' do
-    expect(message: "#{SlackRubyBot.config.user} deal", channel: 'channel').to respond_with_slack_message()
+    expect(message: "#{SlackRubyBot.config.user} deal", channel: 'channel').to respond_with_slack_message
   end
 end

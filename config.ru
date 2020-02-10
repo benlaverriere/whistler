@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 require 'dotenv'
@@ -9,13 +11,11 @@ require 'web'
 Thread.abort_on_exception = true
 
 Thread.new do
-  begin
-    WhistlerBot::Bot.run
-  rescue Exception => e
-    STDERR.puts "ERROR: #{e}"
-    STDERR.puts e.backtrace
-    raise e
-  end
+  WhistlerBot::Bot.run
+rescue Exception => e
+  warn "ERROR: #{e}"
+  warn e.backtrace
+  raise e
 end
 
 run WhistlerBot::Web
