@@ -54,7 +54,7 @@ module WhistlerBot
           ) && return
         end
 
-        participants += data.user unless participants.include? data.user
+        participants += [data.user] unless participants.include? data.user
         client.say(channel: data.channel, text: deal_to(participants))
 
         dealt_hands = @deck.shuffle.each_slice(@deck.length / participants.length)
